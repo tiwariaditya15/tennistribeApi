@@ -1,63 +1,82 @@
-import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import jwt, { JwtPayload } from "jsonwebtoken";
-
-type SignUp = {
-  name: string;
-  username: string;
-  email: string;
-  password: string;
-};
-const SECRET =
-  "gftzGIsq5QqLb7DKsYKjFFegaIxD80uLEa7DieBbOQDASrtkfz03ms8cPIIRPozeSiFlHNHxR5arOuVsRqaRdFsl5ECjKIjDcD9qzM2S/cnHUi3IhgH7oofIYmzBCMQBQiRlPzOPk3RNAl5UtLaNEgcv/NOGLE9OjGVg9rKNBSirj8/ga5rttzEJCFjbr2lAMbLobEmoi+dbIDdIF08g/EoXQB3AgHl1PXYD48MzA1MFf9kAeZLsMYIhJSaGF9Cr6InVa1M9kCnfMLo5nks42olIMYgKBf+pfvUulMWit2buAxXVsvKI2dbMTXtzlmx9hrlfXm9AwNfKfS4wqWUizw==";
 
 const prisma = new PrismaClient();
 
-export const login = async (req: Request, res: Response) => {
+declare module "express-serve-static-core" {
+  interface ParamsDictionary {
+    userId: string;
+  }
+}
+
+export const getUsers = async (req: Request, res: Response) => {
   try {
-    const { username, password }: { username: string; password: string } =
-      req.body;
-    const user = await prisma.user.findUnique({
-      where: {
-        username,
-      },
-    });
-    if (user) {
-      const isValid = await bcrypt.compare(password, user.password);
-      if (isValid) {
-        const token = jwt.sign({ userId: user.id }, SECRET, {
-          expiresIn: "24h",
-        });
-        return res.status(200).json({ token });
-      }
+    const { userId } = req;
+    const users = await prisma.user.findMany({});
+    if (users.length) {
+      const filtered = users
+        .filter((user) => user.id !== userId)
+        .map((user) => ({
+          id: user.id,
+          email: user.email,
+          username: user.email,
+          name: user.name,
+        }));
+      return res.status(200).json({ users: filtered });
     }
-    res.status(404).json({ errorMessage: "Incorrect email!" });
+    return res.status(404).json({ message: "No one is signed in." });
   } catch (error) {
-    console.log({ error });
+    return res.status(500).json({ error });
   }
 };
 
-export const signUp = async (req: Request, res: Response) => {
+export const getUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, username }: SignUp = req.body;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const newUser = await prisma.user.create({
-      data: {
-        username,
-        password: hashedPassword,
-        email,
-        name,
+    const { userId }: { userId: string } = req.params;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
       },
     });
+    if (user) {
+      return res.status(200).json({ user });
+    }
+    return res.status(404).json({ message: "User doesn't exist." });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+};
 
-    const token = jwt.sign({ userId: newUser.id }, SECRET, {
-      expiresIn: "24h",
+export const followUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const { followId }: { followId: string } = req.body;
+    const following = await prisma.following.create({
+      data: {
+        following: followId,
+        user: {
+          connect: { id: userId },
+        },
+      },
     });
-    return res.status(201).json({ token });
+    return res.status(200).json({ following });
   } catch (error) {
     console.log({ error });
-    return res.status(500).json({ error });
+    return res.status(200).json({ error });
+  }
+};
+
+export const getFollowings = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const following = await prisma.following.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return res.status(200).json({ following });
+  } catch (error) {
+    console.log({ error });
+    return res.status(200).json({ error });
   }
 };
