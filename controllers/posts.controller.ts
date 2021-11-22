@@ -6,7 +6,32 @@ const prisma = new PrismaClient();
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
-    const posts = await prisma.post.findMany({});
+    const posts = await prisma.post.findMany({
+      select: {
+        id: true,
+        content: true,
+        reactions: true,
+        media: true,
+        author: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            comment: true,
+            postId: true,
+            post: true,
+            author: true,
+            authorId: true,
+          },
+        },
+      },
+    });
+
     return res.status(200).json({ posts });
   } catch (error) {
     return res.status(500).json({ error });
@@ -16,10 +41,11 @@ export const getPosts = async (req: Request, res: Response) => {
 export const newPost = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
-    const { content }: { content: string } = req.body;
+    const { content, media }: { content: string; media?: string } = req.body;
     const createdPost = await prisma.post.create({
       data: {
         content: content,
+        media: media,
         reactions: 1,
         author: {
           connect: { id: userId },

@@ -17,7 +17,6 @@ export const getUsers = async (req: Request, res: Response) => {
       const filtered = users
         .filter((user) => user.id !== userId)
         .map((user) => ({
-          id: user.id,
           email: user.email,
           username: user.email,
           name: user.name,
@@ -51,11 +50,15 @@ export const followUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
     const { followId }: { followId: string } = req.body;
-    const following = await prisma.following.create({
+    const following = await prisma.user.update({
+      where: {
+        id: userId,
+      },
       data: {
-        following: followId,
-        user: {
-          connect: { id: userId },
+        following: {
+          connect: {
+            id: followId,
+          },
         },
       },
     });
@@ -69,12 +72,22 @@ export const followUser = async (req: Request, res: Response) => {
 export const getFollowings = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
-    const following = await prisma.following.findMany({
+    const data = await prisma.user.findUnique({
       where: {
-        userId: userId,
+        id: userId,
+      },
+      include: {
+        following: true,
       },
     });
-    return res.status(200).json({ following });
+    return res.status(200).json({
+      following: data?.following.map(({ email, username, name, joined }) => ({
+        email,
+        username,
+        name,
+        joined,
+      })),
+    });
   } catch (error) {
     console.log({ error });
     return res.status(200).json({ error });

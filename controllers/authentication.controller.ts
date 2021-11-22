@@ -31,12 +31,22 @@ export const login = async (req: Request, res: Response) => {
             expiresIn: "24h",
           }
         );
-        return res.status(200).json({ token });
+        return res.status(200).json({
+          user: {
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            joined: user.joined,
+          },
+          token,
+        });
       }
+      return res.status(401).json({ error: "Incorrect password" });
     }
-    res.status(404).json({ errorMessage: "Incorrect email!" });
+    return res.status(404).json({ error: "Incorrect username" });
   } catch (error) {
     console.log({ error });
+    return res.status(500).json({ error });
   }
 };
 
@@ -61,7 +71,15 @@ export const signUp = async (req: Request, res: Response) => {
         expiresIn: "24h",
       }
     );
-    return res.status(201).json({ token });
+    return res.status(201).json({
+      user: {
+        name: newUser.name,
+        username: newUser.username,
+        email: newUser.email,
+        joined: newUser.joined,
+      },
+      token,
+    });
   } catch (error) {
     console.log({ error });
     return res.status(500).json({ error });
