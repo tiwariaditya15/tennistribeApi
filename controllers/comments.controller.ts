@@ -33,8 +33,31 @@ export const postComment = async (req: Request, res: Response) => {
         },
       },
     });
+
     return res.status(200).json({ addedComment });
   } catch (error) {
+    return res.status(500).json({ error });
+  }
+};
+
+export const deleteComment = async (req: Request, res: Response) => {
+  try {
+    const { postId, id }: { postId: string; id: string } = req.body;
+    const deletedComment = await prisma.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        comments: {
+          delete: [{ id }],
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Removed comment!", deleteComment, postId });
+  } catch (error) {
+    console.log({ error });
     return res.status(500).json({ error });
   }
 };

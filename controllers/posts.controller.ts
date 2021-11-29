@@ -12,6 +12,7 @@ export const getPosts = async (req: Request, res: Response) => {
         content: true,
         reactions: true,
         media: true,
+        timestamp: true,
         author: {
           select: {
             name: true,
@@ -23,10 +24,14 @@ export const getPosts = async (req: Request, res: Response) => {
           select: {
             id: true,
             comment: true,
-            postId: true,
             post: true,
-            author: true,
-            authorId: true,
+            author: {
+              select: {
+                name: true,
+                username: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -34,6 +39,7 @@ export const getPosts = async (req: Request, res: Response) => {
 
     return res.status(200).json({ posts });
   } catch (error) {
+    console.log({ error });
     return res.status(500).json({ error });
   }
 };

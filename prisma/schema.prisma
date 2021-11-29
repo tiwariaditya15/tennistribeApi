@@ -19,6 +19,7 @@ model User {
   comments Comment[]
   following User[] @relation("UserFollows", references: [id])
   followedBy User[] @relation("UserFollows", references: [id])
+  liked Post[] @relation("liked", references: [id])
 }
 
 model Post {
@@ -30,6 +31,7 @@ model Post {
   author User @relation(fields: [authorId], references: [id])
   authorId String
   comments Comment[]
+  likedBy User[] @relation("liked", references: [id])
 }
 
 model Comment {
