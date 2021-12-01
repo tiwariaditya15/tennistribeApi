@@ -1,7 +1,6 @@
 import express from "express";
-import {} from "../controllers/user.controller";
+import { toggleReaction } from "../controllers/reactions.controller";
 const router = express.Router();
 
-router.route("/add").post();
-router.route("/remove").get();
+router.route("/toggle").post(toggleReaction);
 export default router;

@@ -21,6 +21,6 @@ app.use(verifyToken);
 app.use("/posts", postsRouter);
 app.use("/comments", commentsRouter);
 app.use("/users", userRouter);
-app.use("/reaction", reactionRouter);
+app.use("/reactions", reactionRouter);
 app.use(routeNotFound);
 app.listen(PORT, () => console.log(`server running at port ${PORT}`));
