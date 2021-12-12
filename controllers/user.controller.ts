@@ -9,6 +9,79 @@ declare module "express-serve-static-core" {
   }
 }
 
+export const getUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        name: true,
+        username: true,
+        email: true,
+        following: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+        followedBy: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
+    });
+    if (user) {
+      return res.status(200).json({ user });
+    }
+    return res.status(404).json({ message: "User doesn't exist." });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+};
+
+export const followUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const { followId }: { followId: string } = req.body;
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        following: {
+          connect: {
+            id: followId,
+          },
+        },
+      },
+    });
+    await prisma.user.update({
+      where: {
+        id: followId,
+      },
+      data: {
+        followedBy: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    return res.status(200).json({ followed: true });
+  } catch (error) {
+    console.log({ error });
+    return res.status(200).json({ error });
+  }
+};
+
+// @deprecated
+
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
@@ -26,46 +99,6 @@ export const getUsers = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "No one is signed in." });
   } catch (error) {
     return res.status(500).json({ error });
-  }
-};
-
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const { userId }: { userId: string } = req.params;
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (user) {
-      return res.status(200).json({ user });
-    }
-    return res.status(404).json({ message: "User doesn't exist." });
-  } catch (error) {
-    return res.status(500).json({ error });
-  }
-};
-
-export const followUser = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req;
-    const { followId }: { followId: string } = req.body;
-    const following = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        following: {
-          connect: {
-            id: followId,
-          },
-        },
-      },
-    });
-    return res.status(200).json({ following });
-  } catch (error) {
-    console.log({ error });
-    return res.status(200).json({ error });
   }
 };
 

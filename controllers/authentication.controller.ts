@@ -12,6 +12,49 @@ type SignUp = {
 
 const prisma = new PrismaClient();
 
+export const validateToken = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        following: {
+          select: {
+            username: true,
+            email: true,
+            name: true,
+          },
+        },
+        followedBy: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
+    });
+    console.log({ user, following: user?.following });
+    if (user) {
+      return res.status(200).json({
+        user: {
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          joined: user.joined,
+          following: user.following,
+          followedBy: user.followedBy,
+        },
+      });
+    }
+    return res.status(404).json({ error: "User not found!" });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { username, password }: { username: string; password: string } =

@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.route("/").get(getUsers);
-router.route("/following").get(getFollowings);
-router.route("/:userId").get(getUser);
+router.route("/profile").get(getUser);
 router.route("/follow").post(followUser);
+router.route("/following").get(getFollowings);
 export default router;
