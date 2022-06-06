@@ -48,22 +48,11 @@ export const getUser = async (req: Request, res: Response) => {
 export const followUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
-    const { followId }: { followId: string } = req.body;
-    await prisma.user.update({
+    const { username }: { followId?: string; username: string } = req.body;
+
+    const addToFollwedBy = prisma.user.update({
       where: {
-        id: userId,
-      },
-      data: {
-        following: {
-          connect: {
-            id: followId,
-          },
-        },
-      },
-    });
-    await prisma.user.update({
-      where: {
-        id: followId,
+        username,
       },
       data: {
         followedBy: {
@@ -73,6 +62,19 @@ export const followUser = async (req: Request, res: Response) => {
         },
       },
     });
+    const addToFollowingOfCurrentUser = prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        following: {
+          connect: {
+            username,
+          },
+        },
+      },
+    });
+    await prisma.$transaction([addToFollwedBy, addToFollowingOfCurrentUser]);
     return res.status(200).json({ followed: true });
   } catch (error) {
     console.log({ error });
@@ -80,18 +82,54 @@ export const followUser = async (req: Request, res: Response) => {
   }
 };
 
-// @deprecated
+export const unfollowUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const { username }: { followId?: string; username: string } = req.body;
+
+    const addToFollwedBy = prisma.user.update({
+      where: {
+        username,
+      },
+      data: {
+        followedBy: {
+          disconnect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    const addToFollowingOfCurrentUser = prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        following: {
+          disconnect: {
+            username,
+          },
+        },
+      },
+    });
+    await prisma.$transaction([addToFollwedBy, addToFollowingOfCurrentUser]);
+    return res.status(200).json({ unfollowed: true });
+  } catch (error) {
+    console.log({ error });
+    return res.status(200).json({ error });
+  }
+};
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
     const users = await prisma.user.findMany({});
+    console.log({ users });
     if (users.length) {
       const filtered = users
         .filter((user) => user.id !== userId)
         .map((user) => ({
           email: user.email,
-          username: user.email,
+          username: user.username,
           name: user.name,
         }));
       return res.status(200).json({ users: filtered });
