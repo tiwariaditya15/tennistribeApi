@@ -9,7 +9,7 @@ declare module "express-serve-static-core" {
   }
 }
 
-export const getUser = async (req: Request, res: Response) => {
+export const getCurrentUserProfile = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
     const user = await prisma.user.findUnique({
@@ -42,6 +42,77 @@ export const getUser = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "User doesn't exist." });
   } catch (error) {
     return res.status(500).json({ error });
+  }
+};
+
+export const getProfileByUsername = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    const user = await prisma.user.findUnique({
+      where: {
+        username,
+      },
+      include: {
+        following: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+        followedBy: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+        posts: {
+          select: {
+            id: true,
+            content: true,
+            reactions: true,
+            media: true,
+            author: {
+              select: {
+                username: true,
+                email: true,
+                name: true,
+              },
+            },
+            likedBy: {
+              select: {
+                username: true,
+                email: true,
+                name: true,
+              },
+            },
+            comments: {
+              select: {
+                id: true,
+                comment: true,
+                postId: true,
+                authorId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return res.status(200).json({
+      user: {
+        email: user?.email,
+        username: user?.username,
+        name: user?.name,
+        joined: user?.joined,
+        following: user?.following,
+        followedBy: user?.followedBy,
+      },
+      posts: user?.posts,
+    });
+  } catch (error) {
+    console.log({ error });
+    return res.status(200).json({ error });
   }
 };
 
