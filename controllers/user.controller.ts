@@ -73,6 +73,7 @@ export const getProfileByUsername = async (req: Request, res: Response) => {
             content: true,
             reactions: true,
             media: true,
+            timestamp: true,
             author: {
               select: {
                 username: true,
