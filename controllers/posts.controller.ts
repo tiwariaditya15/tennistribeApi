@@ -3,9 +3,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const getFeed = async (req: Request, res: Response) => {
+export const getExploreFeed = async (req: Request, res: Response) => {
   try {
-    const { userId } = req;
     const posts = await prisma.post.findMany({
       select: {
         id: true,
@@ -40,6 +39,76 @@ export const getFeed = async (req: Request, res: Response) => {
             username: true,
             name: true,
             email: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({ posts });
+  } catch (error) {
+    console.log({ error });
+    return res.status(500).json({ error });
+  }
+};
+
+export const getFeed = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+      select: {
+        following: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    const posts = await prisma.post.findMany({
+      select: {
+        id: true,
+        content: true,
+        reactions: true,
+        media: true,
+        timestamp: true,
+        author: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            comment: true,
+            post: true,
+            author: {
+              select: {
+                name: true,
+                username: true,
+                email: true,
+              },
+            },
+          },
+        },
+        likedBy: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      where: {
+        author: {
+          id: {
+            in: user
+              ? [...user?.["following"].map((user) => user.id), userId]
+              : [],
           },
         },
       },
