@@ -63,6 +63,22 @@ export const login = async (req: Request, res: Response) => {
       where: {
         username,
       },
+      include: {
+        following: {
+          select: {
+            username: true,
+            email: true,
+            name: true,
+          },
+        },
+        followedBy: {
+          select: {
+            name: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
     });
     if (user) {
       const isValid = await bcrypt.compare(password, user.password);
@@ -80,6 +96,8 @@ export const login = async (req: Request, res: Response) => {
             username: user.username,
             email: user.email,
             joined: user.joined,
+            following: user.following,
+            followedBy: user.followedBy,
           },
           token,
         });
@@ -120,6 +138,8 @@ export const signUp = async (req: Request, res: Response) => {
         username: newUser.username,
         email: newUser.email,
         joined: newUser.joined,
+        following: [],
+        followedBy: [],
       },
       token,
     });
