@@ -20,10 +20,14 @@ export const toggleReaction = async (req: Request, res: Response) => {
             name: true,
           },
         },
+        reactions: true,
       },
     });
+    if (!result) {
+      return res.status(404).json({ message: "Post not found!" });
+    }
     //  check if this user has liked this post
-    if (result?.likedBy.some((user) => user.id === userId)) {
+    if (result.likedBy.some((user) => user.id === userId)) {
       await prisma.post.update({
         where: {
           id: postId,
@@ -34,6 +38,7 @@ export const toggleReaction = async (req: Request, res: Response) => {
               id: userId,
             },
           },
+          reactions: result["reactions"] + 1,
         },
       });
     } else {
@@ -47,6 +52,7 @@ export const toggleReaction = async (req: Request, res: Response) => {
               id: userId,
             },
           },
+          reactions: result["reactions"] - 1,
         },
       });
     }
