@@ -88,6 +88,13 @@ export const getProfileByUsername = async (req: Request, res: Response) => {
                 name: true,
               },
             },
+            bookmarkedBy: {
+              select: {
+                username: true,
+                email: true,
+                name: true,
+              },
+            },
             comments: {
               select: {
                 id: true,
