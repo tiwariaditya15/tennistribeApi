@@ -334,7 +334,7 @@ export const toggleBookmarkPost = async (req: Request, res: Response) => {
           },
         },
       });
-      return res.status(200).json({ meesage: "Removed bookmark." });
+      return res.status(200).json({ message: "Removed bookmark." });
     }
     await prisma.post.update({
       where: {
@@ -348,7 +348,7 @@ export const toggleBookmarkPost = async (req: Request, res: Response) => {
         },
       },
     });
-    return res.status(200).json({ meesage: "Bookmarked." });
+    return res.status(200).json({ message: "Bookmarked." });
   } catch (error) {
     console.log({ error });
     return res.status(500).json({ error });
