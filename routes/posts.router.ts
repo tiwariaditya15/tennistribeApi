@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 router.route("/").get(getFeed);
-router.route("/explore").get(getExploreFeed);
+// router.route("/explore").get(getExploreFeed);
 router.route("/bookmarks").get(getBookmarksFeed);
 router.route("/bookmark").post(toggleBookmarkPost);
 router.route("/:postId").get(getPost);

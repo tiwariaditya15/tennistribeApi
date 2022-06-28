@@ -6,6 +6,7 @@ import postsRouter from "./routes/posts.router";
 import commentsRouter from "./routes/comments.router";
 import userRouter from "./routes/user.router";
 import reactionRouter from "./routes/reactions.router";
+import exploreRouter from "./routes/explore.router";
 import verifyToken from "./middlewares/verifyToken.middleware";
 import { routeNotFound } from "./middlewares/routeNotFound";
 
@@ -16,6 +17,7 @@ const PORT: number = parseInt(process.env.PORT as string, 10);
 
 app.use(cors());
 app.use(express.json());
+app.use("/explore", exploreRouter);
 app.use("/accounts", authenticationRouter);
 app.use(verifyToken);
 app.use("/posts", postsRouter);
