@@ -75,6 +75,9 @@ export const getFeed = async (req: Request, res: Response) => {
       },
     });
     const posts = await prisma.post.findMany({
+      orderBy: {
+        timestamp: "desc",
+      },
       select: {
         id: true,
         content: true,
