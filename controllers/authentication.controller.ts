@@ -107,7 +107,7 @@ export const login = async (req: Request, res: Response) => {
     return res.status(404).json({ error: "Incorrect username" });
   } catch (error) {
     console.log({ error });
-    return res.status(500).json({ error });
+    return res.status(500).json({ error: "We're having trouble logging you." });
   }
 };
 
