@@ -9,6 +9,8 @@ declare module "express-serve-static-core" {
   }
 }
 
+export const updateProfile = async (req: Request, res: Response) => {};
+
 export const getCurrentUserProfile = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
@@ -166,7 +168,7 @@ export const unfollowUser = async (req: Request, res: Response) => {
     const { userId } = req;
     const { username }: { followId?: string; username: string } = req.body;
 
-    const addToFollwedBy = prisma.user.update({
+    const removeFromFollwedBy = prisma.user.update({
       where: {
         username,
       },
@@ -178,7 +180,7 @@ export const unfollowUser = async (req: Request, res: Response) => {
         },
       },
     });
-    const addToFollowingOfCurrentUser = prisma.user.update({
+    const removeFromFollowingOfCurrentUser = prisma.user.update({
       where: {
         id: userId,
       },
@@ -190,7 +192,10 @@ export const unfollowUser = async (req: Request, res: Response) => {
         },
       },
     });
-    await prisma.$transaction([addToFollwedBy, addToFollowingOfCurrentUser]);
+    await prisma.$transaction([
+      removeFromFollwedBy,
+      removeFromFollowingOfCurrentUser,
+    ]);
     return res.status(200).json({ unfollowed: true });
   } catch (error) {
     console.log({ error });
