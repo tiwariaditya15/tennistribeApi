@@ -1,5 +1,17 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/index.js"
+    }
+  ],
   "headers": [
     {
       "source": "*",
@@ -15,18 +27,6 @@
           "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
         }
       ]
-    }
-  ],
-  "builds": [
-    {
-      "src": "index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/index.js"
     }
   ]
 }
