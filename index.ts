@@ -26,5 +26,3 @@ app.use("/users", userRouter);
 app.use("/reactions", reactionRouter);
 app.use(routeNotFound);
 app.listen(PORT, () => console.log(`server running at port ${PORT}`));
-
-module.exports = app;
