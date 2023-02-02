@@ -6,11 +6,10 @@
       "use": "@vercel/node"
     }
   ],
-  "buildCommand": "tsc --build",
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/index.js"
+      "dest": "index.ts"
     }
   ]
 }
